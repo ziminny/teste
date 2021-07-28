@@ -1,6 +1,8 @@
 import Head from 'next/head'
 import Image from 'next/image'
 import styles from '../styles/Home.module.css'
+ 
+import netList from 'network-list';
 
 export default function Home() {
   return (
@@ -66,4 +68,24 @@ export default function Home() {
       </footer>
     </div>
   )
+}
+
+export async function getServerSideProps(context) {
+
+
+  netList.scanEach({}, (err, obj) => {
+    
+      //console.log("OBJ" , obj);
+    
+  });
+  
+  
+  netList.scan({}, (err, arr) => {
+       console.log(arr); // array with all devices
+  });
+ 
+
+  return {
+    props: {}, // will be passed to the page component as props
+  }
 }
