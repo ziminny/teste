@@ -1,10 +1,21 @@
 import Head from 'next/head'
 import Image from 'next/image'
 import styles from '../styles/Home.module.css'
- 
+ import nookies,{parseCookies} from "nookies"
 import netList from 'network-list';
+import { useEffect, useState } from 'react';
 
 export default function Home() {
+  const cookies = parseCookies()
+  
+  const [state,setState] = useState([])
+ 
+
+  useEffect(() => {
+    const { fromGetInitialProps } = cookies
+    setState(JSON.parse(fromGetInitialProps || []))
+  },[setState])
+
   return (
     <div className={styles.container}>
       <Head>
@@ -13,76 +24,43 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <main className={styles.main}>
-        <h1 className={styles.title}>
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
-        </h1>
-
-        <p className={styles.description}>
-          Get started by editing{' '}
-          <code className={styles.code}>pages/index.js</code>
-        </p>
-
-        <div className={styles.grid}>
-          <a href="https://nextjs.org/docs" className={styles.card}>
-            <h2>Documentation &rarr;</h2>
-            <p>Find in-depth information about Next.js features and API.</p>
-          </a>
-
-          <a href="https://nextjs.org/learn" className={styles.card}>
-            <h2>Learn &rarr;</h2>
-            <p>Learn about Next.js in an interactive course with quizzes!</p>
-          </a>
-
-          <a
-            href="https://github.com/vercel/next.js/tree/master/examples"
-            className={styles.card}
-          >
-            <h2>Examples &rarr;</h2>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
-
-          <a
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-          >
-            <h2>Deploy &rarr;</h2>
-            <p>
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
-        </div>
-      </main>
-
-      <footer className={styles.footer}>
-        <a
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <span className={styles.logo}>
-            <Image src="/vercel.svg" alt="Vercel Logo" width={72} height={16} />
-          </span>
-        </a>
-      </footer>
+       {
+         state.length && (
+          <div>
+            { state[0].ip }
+          </div>
+         )
+       }
     </div>
   )
 }
 
+const list = (n) => new Promise((resolve) => {
+  const items = []
+  n.scanEach({}, (err, obj) => {
+    if(obj.alive) {
+     
+      items.push(obj)
+      resolve(items)
+    }
+  });
+ 
+})
+
 export async function getServerSideProps(context) {
-
-
-  netList.scanEach({}, (err, obj) => {
-    
-      //console.log("OBJ" , obj);
-    
-  });
+  const cookies = nookies.get(context)
   
+  const res = await list(netList)
+ 
+ 
+    nookies.set(context, 'fromGetInitialProps', JSON.stringify(res), {
+      maxAge: 30 * 24 * 60 * 60,
+    })
+ 
   
-  netList.scan({}, (err, arr) => {
-       console.log(arr); // array with all devices
-  });
+  // netList.scan({}, (err, arr) => {
+  //     // console.log(arr); // array with all devices
+  // });
  
 
   return {
